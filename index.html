@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول التواريخ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .converter-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.9em;
+        }
+
+        .today-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .today-date {
+            font-size: 1.5em;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .hijri-months {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .month-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .hijri-months {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 محول التواريخ</h1>
+        <p class="subtitle">تحويل بين التاريخ الميلادي والهجري</p>
+
+        <!-- From Gregorian to Hijri -->
+        <div class="converter-section">
+            <div class="section-title">
+                <span>🌍</span>
+                <span>التحويل من الميلادي إلى الهجري</span>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <label>السنة الميلادية</label>
+                    <input type="number" id="gYear" placeholder="2023" min="1" max="9999" value="2023">
+                </div>
+                <div class="input-wrapper">
+                    <label>الشهر</label>
+                    <select id="gMonth">
+                        <option value="1">يناير</option>
+                        <option value="2">فبراير</option>
+                        <option value="3">مارس</option>
+                        <option value="4">أبريل</option>
+                        <option value="5">مايو</option>
+                        <option value="6">يونيو</option>
+                        <option value="7" selected>يوليو</option>
+                        <option value="8">أغسطس</option>
+                        <option value="9">سبتمبر</option>
+                        <option value="10">أكتوبر</option>
+                        <option value="11">نوفمبر</option>
+                        <option value="12">ديسمبر</option>
+                    </select>
+                </div>
+                <div class="input-wrapper">
+                    <label>اليوم</label>
+                    <input type="number" id="gDay" placeholder="27" min="1" max="31" value="27">
+                </div>
+            </div>
+            
+            <button onclick="convertToHijri()">تحويل إلى هجري ⬅️</button>
+            
+            <div class="result-box" id="hijriResult"></div>
+        </div>
+
+        <!-- From Hijri to Gregorian -->
+        <div class="converter-section">
+            <div class="section-title">
+                <span>🌙</span>
+                <span>التحويل من الهجري إلى الميلادي</span>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <label>السنة الهجرية</label>
+                    <input type="number" id="hYear" placeholder="1445" min="1" max="9999" value="1445">
+                </div>
+                <div class="input-wrapper">
+                    <label>الشهر الهجري</label>
+                    <select id="hMonth">
+                        <option value="1" selected>محرم</option>
+                        <option value="2">صفر</option>
+                        <option value="3">ربيع الأول</option>
+                        <option value="4">ربيع الثاني</option>
+                        <option value="5">جمادى الأولى</option>
+                        <option value="6">جمادى الآخرة</option>
+                        <option value="7">رجب</option>
+                        <option value="8">شعبان</option>
+                        <option value="9">رمضان</option>
+                        <option value="10">شوال</option>
+                        <option value="11">ذو القعدة</option>
+                        <option value="12">ذو الحجة</option>
+                    </select>
+                </div>
+                <div class="input-wrapper">
+                    <label>اليوم</label>
+                    <input type="number" id="hDay" placeholder="10" min="1" max="30" value="10">
+                </div>
+            </div>
+            
+            <button onclick="convertToGregorian()">تحويل إلى ميلادي ⬅️</button>
+            
+            <div class="result-box" id="gregorianResult"></div>
+        </div>
+
+        <!-- Today's Date -->
+        <div class="today-section">
+            <h3>📆 التاريخ اليوم</h3>
+            <div class="today-date" id="todayGregorian"></div>
+            <div class="today-date" id="todayHijri"></div>
+        </div>
+
+        <!-- Hijri Months Reference -->
+        <div class="converter-section">
+            <div class="section-title">
+                <span>📖</span>
+                <span>الأشهر الهجرية</span>
+            </div>
+            <div class="hijri-months">
+                <div class="month-item">1. محرم</div>
+                <div class="month-item">2. صفر</div>
+                <div class="month-item">3. ربيع الأول</div>
+                <div class="month-item">4. ربيع الثاني</div>
+                <div class="month-item">5. جمادى الأولى</div>
+                <div class="month-item">6. جمادى الآخرة</div>
+                <div class="month-item">7. رجب</div>
+                <div class="month-item">8. شعبان</div>
+                <div class="month-item">9. رمضان</div>
+                <div class="month-item">10. شوال</div>
+                <div class="month-item">11. ذو القعدة</div>
+                <div class="month-item">12. ذو الحجة</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const hijriMonths = [
+            'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 
+            'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
+            'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+        ];
+
+        const gregorianMonths = [
+            'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+            'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        ];
+
+        // Simplified Hijri conversion (approximation)
+        function gregorianToHijri(year, month, day) {
+            const jd = Math.floor((1461 * (year + 4800 + Math.floor((month - 14) / 12))) / 4) +
+                      Math.floor((367 * (month - 2 - 12 * (Math.floor((month - 14) / 12)))) / 12) -
+                      Math.floor((3 * (Math.floor((year + 4900 + Math.floor((month - 14) / 12)) / 100))) / 4) +
+                      day - 32075;
+            
+            const l = jd - 1948440 + 10632;
+            const n = Math.floor((l - 1) / 10631);
+            const l2 = l - 10631 * n + 354;
+            const j = (Math.floor((10985 - l2) / 5316)) * (Math.floor((50 * l2) / 17719)) +
+                     (Math.floor(l2 / 5670)) * (Math.floor((43 * l2) / 15238));
+            const l3 = l2 - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) -
+                      (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+            
+            const hMonth = Math.floor((24 * l3) / 709);
+            const hDay = l3 - Math.floor((709 * hMonth) / 24);
+            const hYear = 30 * n + j - 30;
+
+            return { year: hYear, month: hMonth, day: hDay };
+        }
+
+        function hijriToGregorian(year, month, day) {
+            const jd = Math.floor((11 * year + 3) / 30) + 
+                      354 * year + 30 * month - 
+                      Math.floor((month - 1) / 2) + 
+                      day + 1948440 - 385;
+            
+            const l = jd + 68569;
+            const n = Math.floor((4 * l) / 146097);
+            const l2 = l - Math.floor((146097 * n + 3) / 4);
+            const i = Math.floor((4000 * (l2 + 1)) / 1461001);
+            const l3 = l2 - Math.floor((1461 * i) / 4) + 31;
+            const j = Math.floor((80 * l3) / 2447);
+            
+            const gDay = l3 - Math.floor((2447 * j) / 80);
+            const l4 = Math.floor(j / 11);
+            const gMonth = j + 2 - 12 * l4;
+            const gYear = 100 * (n - 49) + i + l4;
+
+            return { year: gYear, month: gMonth, day: gDay };
+        }
+
+        function convertToHijri() {
+            const year = parseInt(document.getElementById('gYear').value);
+            const month = parseInt(document.getElementById('gMonth').value);
+            const day = parseInt(document.getElementById('gDay').value);
+
+            if (!year || !month || !day) {
+                alert('الرجاء إدخال تاريخ صحيح');
+                return;
+            }
+
+            const hijri = gregorianToHijri(year, month, day);
+            const resultBox = document.getElementById('hijriResult');
+            
+            resultBox.innerHTML = `
+                <div style="font-size: 1.5em; margin-bottom: 10px;">
+                    🌙 ${hijri.day} ${hijriMonths[hijri.month - 1]} ${hijri.year} هـ
+                </div>
+                <div class="result-details">
+                    التاريخ الميلادي: ${day} ${gregorianMonths[month - 1]} ${year} م
+                </div>
+            `;
+            resultBox.classList.add('show');
+        }
+
+        function convertToGregorian() {
+            const year = parseInt(document.getElementById('hYear').value);
+            const month = parseInt(document.getElementById('hMonth').value);
+            const day = parseInt(document.getElementById('hDay').value);
+
+            if (!year || !month || !day) {
+                alert('الرجاء إدخال تاريخ صحيح');
+                return;
+            }
+
+            const gregorian = hijriToGregorian(year, month, day);
+            const resultBox = document.getElementById('gregorianResult');
+            
+            resultBox.innerHTML = `
+                <div style="font-size: 1.5em; margin-bottom: 10px;">
+                    🌍 ${gregorian.day} ${gregorianMonths[gregorian.month - 1]} ${gregorian.year} م
+                </div>
+                <div class="result-details">
+                    التاريخ الهجري: ${day} ${hijriMonths[month - 1]} ${year} هـ
+                </div>
+            `;
+            resultBox.classList.add('show');
+        }
+
+        // Display today's date
+        function displayToday() {
+            const today = new Date();
+            const gYear = today.getFullYear();
+            const gMonth = today.getMonth() + 1;
+            const gDay = today.getDate();
+
+            const hijri = gregorianToHijri(gYear, gMonth, gDay);
+
+            document.getElementById('todayGregorian').textContent = 
+                `🌍 ${gDay} ${gregorianMonths[gMonth - 1]} ${gYear} م`;
+            
+            document.getElementById('todayHijri').textContent = 
+                `🌙 ${hijri.day} ${hijriMonths[hijri.month - 1]} ${hijri.year} هـ`;
+        }
+
+        displayToday();
+    </script>
+</body>
+</html>
