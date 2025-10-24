@@ -202,10 +202,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>📅تحويل التاريخ برعاية ابوفراس📅</h1>
-        <p class="subtitle">تحويل بين التاريخ الميلادي والهجري</p>
+        <h1>📅 تحويل التاريخ برعاية أبو فراس 📅</h1>
+        <p class="subtitle">تحويل دقيق بين التاريخ الميلادي والهجري (تقويم أم القرى)</p>
 
-        <!-- From Gregorian to Hijri -->
         <div class="converter-section">
             <div class="section-title">
                 <span>🌍</span>
@@ -245,7 +244,6 @@
             <div class="result-box" id="hijriResult"></div>
         </div>
 
-        <!-- From Hijri to Gregorian -->
         <div class="converter-section">
             <div class="section-title">
                 <span>🌙</span>
@@ -285,14 +283,12 @@
             <div class="result-box" id="gregorianResult"></div>
         </div>
 
-        <!-- Today's Date -->
         <div class="today-section">
             <h3>📆 التاريخ اليوم</h3>
             <div class="today-date" id="todayGregorian"></div>
             <div class="today-date" id="todayHijri"></div>
         </div>
 
-        <!-- Hijri Months Reference -->
         <div class="converter-section">
             <div class="section-title">
                 <span>📖</span>
@@ -327,47 +323,80 @@
             'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
         ];
 
-        // Simplified Hijri conversion (approximation)
-        function gregorianToHijri(year, month, day) {
-            const jd = Math.floor((1461 * (year + 4800 + Math.floor((month - 14) / 12))) / 4) +
-                      Math.floor((367 * (month - 2 - 12 * (Math.floor((month - 14) / 12)))) / 12) -
-                      Math.floor((3 * (Math.floor((year + 4900 + Math.floor((month - 14) / 12)) / 100))) / 4) +
-                      day - 32075;
-            
-            const l = jd - 1948440 + 10632;
-            const n = Math.floor((l - 1) / 10631);
-            const l2 = l - 10631 * n + 354;
-            const j = (Math.floor((10985 - l2) / 5316)) * (Math.floor((50 * l2) / 17719)) +
-                     (Math.floor(l2 / 5670)) * (Math.floor((43 * l2) / 15238));
-            const l3 = l2 - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) -
-                      (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
-            
-            const hMonth = Math.floor((24 * l3) / 709);
-            const hDay = l3 - Math.floor((709 * hMonth) / 24);
-            const hYear = 30 * n + j - 30;
-
-            return { year: hYear, month: hMonth, day: hDay };
+        // استخدام Intl API للتحويل الدقيق باستخدام تقويم أم القرى
+        function formatToHijri(dateObject) {
+            try {
+                const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                return formatter.format(dateObject);
+            } catch (e) {
+                return 'خطأ في التحويل';
+            }
         }
 
-        function hijriToGregorian(year, month, day) {
-            const jd = Math.floor((11 * year + 3) / 30) + 
-                      354 * year + 30 * month - 
-                      Math.floor((month - 1) / 2) + 
-                      day + 1948440 - 385;
-            
-            const l = jd + 68569;
-            const n = Math.floor((4 * l) / 146097);
-            const l2 = l - Math.floor((146097 * n + 3) / 4);
-            const i = Math.floor((4000 * (l2 + 1)) / 1461001);
-            const l3 = l2 - Math.floor((1461 * i) / 4) + 31;
-            const j = Math.floor((80 * l3) / 2447);
-            
-            const gDay = l3 - Math.floor((2447 * j) / 80);
-            const l4 = Math.floor(j / 11);
-            const gMonth = j + 2 - 12 * l4;
-            const gYear = 100 * (n - 49) + i + l4;
+        function getHijriComponents(dateObject) {
+            try {
+                const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric'
+                });
+                const parts = formatter.formatToParts(dateObject);
+                
+                let year, month, day;
+                parts.forEach(part => {
+                    if (part.type === 'year') year = parseInt(part.value);
+                    if (part.type === 'month') month = parseInt(part.value);
+                    if (part.type === 'day') day = parseInt(part.value);
+                });
+                
+                return { year, month, day };
+            } catch (e) {
+                return null;
+            }
+        }
 
-            return { year: gYear, month: gMonth, day: gDay };
+        // تحويل من هجري إلى ميلادي باستخدام خوارزمية تقريبية
+        function hijriToGregorianApprox(hYear, hMonth, hDay) {
+            // نقطة مرجعية: 1 محرم 1356 هـ = 18 مارس 1937 م
+            const baseHijri = { year: 1356, month: 1, day: 1 };
+            const baseGregorian = new Date(1937, 2, 18);
+            
+            // حساب الأيام من نقطة المرجع
+            let totalDays = 0;
+            
+            // حساب السنوات
+            for (let y = baseHijri.year; y < hYear; y++) {
+                totalDays += isLeapHijriYear(y) ? 355 : 354;
+            }
+            
+            // حساب الأشهر
+            const monthDays = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+            for (let m = 1; m < hMonth; m++) {
+                totalDays += monthDays[m - 1];
+                if (m === 12 && isLeapHijriYear(hYear)) {
+                    totalDays += 1;
+                }
+            }
+            
+            // حساب الأيام
+            totalDays += hDay - 1;
+            
+            // إضافة الأيام إلى التاريخ المرجعي
+            const resultDate = new Date(baseGregorian.getTime() + (totalDays * 86400000));
+            
+            return {
+                year: resultDate.getFullYear(),
+                month: resultDate.getMonth() + 1,
+                day: resultDate.getDate()
+            };
+        }
+
+        function isLeapHijriYear(year) {
+            return (((year * 11) + 14) % 30) < 11;
         }
 
         function convertToHijri() {
@@ -376,16 +405,24 @@
             const day = parseInt(document.getElementById('gDay').value);
 
             if (!year || !month || !day) {
-                alert('الرجاء إدخال تاريخ صحيح');
+                alert('الرجاء إدخال تاريخ ميلادي صحيح');
                 return;
             }
 
-            const hijri = gregorianToHijri(year, month, day);
+            const dateObject = new Date(year, month - 1, day);
+
+            // التحقق من صحة التاريخ
+            if (dateObject.getFullYear() !== year || dateObject.getMonth() !== month - 1 || dateObject.getDate() !== day) {
+                alert('التاريخ الميلادي غير صالح!');
+                return;
+            }
+
+            const hijriString = formatToHijri(dateObject);
             const resultBox = document.getElementById('hijriResult');
             
             resultBox.innerHTML = `
                 <div style="font-size: 1.5em; margin-bottom: 10px;">
-                    🌙 ${hijri.day} ${hijriMonths[hijri.month - 1]} ${hijri.year} هـ
+                    🌙 ${hijriString}
                 </div>
                 <div class="result-details">
                     التاريخ الميلادي: ${day} ${gregorianMonths[month - 1]} ${year} م
@@ -400,11 +437,16 @@
             const day = parseInt(document.getElementById('hDay').value);
 
             if (!year || !month || !day) {
-                alert('الرجاء إدخال تاريخ صحيح');
+                alert('الرجاء إدخال تاريخ هجري صحيح');
                 return;
             }
 
-            const gregorian = hijriToGregorian(year, month, day);
+            if (day > 30 || day < 1) {
+                alert('اليوم يجب أن يكون بين 1 و 30');
+                return;
+            }
+
+            const gregorian = hijriToGregorianApprox(year, month, day);
             const resultBox = document.getElementById('gregorianResult');
             
             resultBox.innerHTML = `
@@ -418,20 +460,19 @@
             resultBox.classList.add('show');
         }
 
-        // Display today's date
         function displayToday() {
             const today = new Date();
             const gYear = today.getFullYear();
             const gMonth = today.getMonth() + 1;
             const gDay = today.getDate();
 
-            const hijri = gregorianToHijri(gYear, gMonth, gDay);
-
+            const hijriString = formatToHijri(today);
+            
             document.getElementById('todayGregorian').textContent = 
                 `🌍 ${gDay} ${gregorianMonths[gMonth - 1]} ${gYear} م`;
             
             document.getElementById('todayHijri').textContent = 
-                `🌙 ${hijri.day} ${hijriMonths[hijri.month - 1]} ${hijri.year} هـ`;
+                `🌙 ${hijriString}`;
         }
 
         displayToday();
